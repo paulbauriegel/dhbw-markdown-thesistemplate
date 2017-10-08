@@ -1,0 +1,1 @@
+pandoc --from=markdown+hard_line_breaks+backtick_code_blocks+abbreviations --top-level-division=chapter --template=template.tex --biblatex --latex-engine=lualatex --listings --filter=pandoc-crossref input.md -o output.pdf

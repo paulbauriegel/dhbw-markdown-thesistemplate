@@ -1,0 +1,559 @@
+\RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[
+	$if(lang)$$babel-lang$,$endif$$if(fontsize)$$fontsize$,$else$12pt,$endif$ % Schriftgroesse
+	$if(lang)$$babel-lang$,$endif$oneside,			% Einseitiger Druck.
+	pagesize,
+	$if(papersize)$paper=$papersize$,$else$paper=a4,$endif$
+	parskip=half,		% Halbe Zeile Abstand zwischen Absätzen.
+	%	topmargin = 10pt,	% Abstand Seitenrand (Std:1in) zu Kopfzeile [laut log: unused]
+	headheight = 18pt,	% Höhe der Kopfzeile
+	%	headsep = 30pt,	% Abstand zwischen Kopfzeile und Text Body  [laut log: unused]
+	headsepline,		% Linie nach Kopfzeile.
+	footsepline,		% Linie vor Fusszeile.
+	footheight = 18pt,	% Höhe der Fusszeile
+	abstract=true,		% Abstract Überschriften
+	DIV=calc,		% Satzspiegel berechnen
+	BCOR=8mm,		% Bindekorrektur links: 8mm
+	headinclude=false,	% Kopfzeile nicht in den Satzspiegel einbeziehen
+	footinclude=false,	% Fußzeile nicht in den Satzspiegel einbeziehen
+	%listof=totoc,		% Abbildungs-/ Tabellenverzeichnis im Inhaltsverzeichnis darstellen
+	toc=bibliography,	% Literaturverzeichnis im Inhaltsverzeichnis darstellen
+	%	$for(classoption)$$classoption$$sep$,$endfor$
+%]{$if(documentclass)$$documentclass$$else$scrreprt$endif$}	% Koma-Script report-Klasse, fuer laengere Bachelorarbeiten alternativ auch: scrbook
+]{scrbook}	% Koma-Script report-Klasse, fuer laengere Bachelorarbeiten alternativ auch: scrbook scrreprt
+
+\usepackage{scrhack}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Pandoc Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+%\usepackage{fixltx2e} % provides \textsubscript not needed
+\usepackage[utf8]{luainputenc} % um pdflatex zum kompilieren verwenden zu können
+$if(tables)$
+\usepackage{longtable,booktabs}
+ % Fix footnotes in tables (requires footnote package)
+\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{long table}}{}
+$endif$
+$if(graphics)$
+\usepackage{graphicx,grffile}
+$endif$
+
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+	%\usepackage[$for(microtypeoptions)$$microtypeoptions$$sep$,$endfor$]{microtype}
+	\usepackage[activate]{microtype} %Zeilenumbruch und mehr
+	\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+$if(verbatim-in-note)$
+	\usepackage{fancyvrb}
+$endif$
+
+\usepackage{listings}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Pandoc Engine-Handling %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[$if(fontenc)$$fontenc$$else$T1$endif$]{fontenc}
+	$if(euro)$
+  	\usepackage{eurosym}
+	$endif$
+\else % if luatex or xelatex
+	$if(mathspec)$
+	  \ifxetex
+	    \usepackage{mathspec}
+	  \else
+	    \usepackage{unicode-math}
+	  \fi
+	$else$
+	  \usepackage{unicode-math}
+	$endif$
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+	$for(fontfamilies)$
+	  \newfontfamily{$fontfamilies.name$}[$fontfamilies.options$]{$fontfamilies.font$}
+	$endfor$
+	$if(euro)$
+	  \newcommand{\euro}{€}
+	$endif$
+	$if(mainfont)$
+	    \setmainfont[$for(mainfontoptions)$$mainfontoptions$$sep$,$endfor$]{$mainfont$}
+	$endif$
+	$if(sansfont)$
+	    \setsansfont[$for(sansfontoptions)$$sansfontoptions$$sep$,$endfor$]{$sansfont$}
+	$endif$
+	$if(monofont)$
+	    \setmonofont[Mapping=tex-ansi$if(monofontoptions)$,$for(monofontoptions)$$monofontoptions$$sep$,$endfor$$endif$]{$monofont$}
+	$endif$
+	$if(mathfont)$
+	$if(mathspec)$
+	  \ifxetex
+	    \setmathfont(Digits,Latin,Greek)[$for(mathfontoptions)$$mathfontoptions$$sep$,$endfor$]{$mathfont$}
+	  \else
+	    \setmathfont[$for(mathfontoptions)$$mathfontoptions$$sep$,$endfor$]{$mathfont$}
+	  \fi
+	$else$
+	  \setmathfont[$for(mathfontoptions)$$mathfontoptions$$sep$,$endfor$]{$mathfont$}
+	$endif$
+	$endif$
+	$if(CJKmainfont)$
+	    \usepackage{xeCJK}
+	    \setCJKmainfont[$for(CJKoptions)$$CJKoptions$$sep$,$endfor$]{$CJKmainfont$}
+	$endif$
+\fi
+\usepackage[utf8]{luainputenc} % inputrec for LuaLaTex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Custom Package Includes %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{xstring}
+\usepackage{makeidx}
+\usepackage[autostyle=true,german=quotes]{csquotes}
+\usepackage{multirow}
+\usepackage{tabu}
+\usepackage{enumitem}	% mehr Optionen bei Aufzählungen
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{pdfpages}   % zum Einbinden von PDFs
+\usepackage{pdflscape}
+\usepackage{xcolor} 	% für HTML-Notation
+\usepackage{float}
+\usepackage{array}
+\usepackage{calc}		% zum Rechnen (Bildtabelle in Deckblatt)
+\usepackage{wrapfig}
+\usepackage{pgffor} % für automatische Kapiteldateieinbindung
+\usepackage[perpage, hang, multiple, stable]{footmisc} % Fussnoten
+\usepackage{acronym} % falls gewünscht kann die Option footnote eingefügt werden, dann wird die Erklärung nicht inline sondern in einer Fußnote dargestellt
+\usepackage{color}
+\usepackage[headsepline,footsepline,plainfootsepline]{scrlayer-scrpage}
+\usepackage{verbatim}
+\usepackage{epigraph}
+\usepackage{dirtytalk}
+\usepackage{rotating}
+\usepackage[obeyFinal,backgroundcolor=yellow,linecolor=black]{todonotes}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Pandoc Specific Configuration %%%%%%%%%%%%%%%%%%%%%%%%%
+%% Whatever
+\PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
+$if(colorlinks)$
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+$endif$
+
+%% Pandoc Literate Haskell support
+$if(lhs)$
+	\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
+$endif$
+
+%% Pandoc Syntax highlighting
+$if(highlighting-macros)$
+  $highlighting-macros$
+$endif$
+
+%% Make links footnotes instead of hotlinks
+$if(links-as-notes)$
+ \renewcommand{\href}[2]{#2\footnote{\url{#1}}}
+$endif$
+
+%% Indent Blocks
+$if(indent)$
+$else$
+	%\IfFileExists{parskip.sty}{%
+	%\usepackage{parskip}
+	%}{% else
+	%\setlength{\parindent}{0pt}
+	%\setlength{\parskip}{6pt plus 2pt minus 1pt}
+	%}
+$endif$
+
+%% Verbatim (code) blocks
+$if(verbatim-in-note)$
+\VerbatimFootnotes % allows verbatim text in footnotes
+$endif$
+
+%% Lists
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+$if(numbersections)$
+  \setcounter{secnumdepth}{$if(secnumdepth)$$secnumdepth$$else$5$endif$}
+$else$
+	\setcounter{secnumdepth}{0}
+$endif$
+
+%% Subparagraph
+$if(subparagraph)$
+$else$
+  % Redefines (sub)paragraphs to behave more like sections
+	\ifx\paragraph\undefined\else
+	\let\oldparagraph\paragraph
+	\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+	\fi
+	\ifx\subparagraph\undefined\else
+	\let\oldsubparagraph\subparagraph
+	\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+	\fi
+$endif$
+
+%%DIR ???
+$if(dir)$
+	\ifxetex
+	  % load bidi as late as possible as it modifies e.g. graphicx
+	  $if(latex-dir-rtl)$
+	  \usepackage[RTLdocument]{bidi}
+	  $else$
+	  \usepackage{bidi}
+	  $endif$
+	\fi
+	\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+	  \TeXXeTstate=1
+	  \newcommand{\RL}[1]{\beginR #1\endR}
+	  \newcommand{\LR}[1]{\beginL #1\endL}
+	  \newenvironment{RTL}{\beginR}{\endR}
+	  \newenvironment{LTR}{\beginL}{\endL}
+	\fi
+$endif$
+
+%% For Custom Headers in Pandoc
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+%%%%%%%%%%%%%%%%%%%%%%% Template Specific Configuration %%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Language
+$if(lang)$
+%\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  %\usepackage[shorthands=off,$for(babel-otherlangs)$$babel-otherlangs$,$endfor$ ngerman, english, main=$babel-lang$]{babel} % readapt to pandoc
+$if(babel-newcommands)$
+  $babel-newcommands$
+$endif$
+%\else
+%  \usepackage{polyglossia}
+%  \setmainlanguage[$polyglossia-lang.options$]{$polyglossia-lang.name$}
+$for(polyglossia-otherlangs)$
+%  \setotherlanguage[$polyglossia-otherlangs.options$]{$polyglossia-otherlangs.name$}
+$endfor$
+%\fi
+$endif$
+\usepackage[shorthands=off, ngerman, english, main=english]{babel} % readapt to pandoc
+\babeltags{de = ngerman, en = american}
+\selectlanguage{american}
+
+
+%% Set Image-Path
+\graphicspath{{images/}}
+
+\newcommand{\abschluss}{Bachelor of Science}
+\newcommand{\dhbw}{Mannheim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Layout Configuration %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\zitierstil}{numeric-comp}
+\newcommand{\seitenrand}{2.5cm}%% Seitenränder
+\newcommand{\kapitelabstand}{20pt}%% Abstand vor Kapitelüberschriften zum oberen Seitenrand
+\newcommand{\spaltenabstand}{10pt}%% Spaltenabstand
+\newcommand{\zeilenabstand}{1.5}%%Zeilenabstand innerhalb einer Tabelle
+
+
+%% Set Fonts - fontfamily
+$if(fontfamily)$
+	\usepackage[$for(fontfamilyoptions)$$fontfamilyoptions$$sep$,$endfor$]{$fontfamily$}
+$else$
+	\usepackage{lmodern}
+$endif$
+
+%% Set Spacing - linestretch
+$if(linestretch)$
+	\usepackage{setspace}
+	\setstretch{$linestretch$}
+$else$
+	\usepackage[onehalfspacing]{setspace}
+$endif$
+
+%% Set Geometry - geometry
+\usepackage[margin=2.5cm,foot=1cm]{geometry}	% Seitenränder und Abstände
+
+%% Set Bibliograph - Literaturverweise (sowohl deutsch als auch englisch)
+$if(natbib)$
+	\usepackage{natbib}
+	\bibliographystyle{$if(biblio-style)$$biblio-style$$else$plainnat$endif$}
+$endif$
+$if(biblatex)$
+\usepackage[
+	$if(biblio-style)$style=$biblio-style$,$else$style=numeric-comp,$endif$
+	$if(lang)$sortlocale=$lang$,$endif$
+	$for(biblatexoptions)$
+	$biblatexoptions$$sep$,
+	$endfor$
+]{biblatex}
+	$for(bibliography)$
+\addbibresource{$bibliography$}
+	$endfor$
+$endif$
+
+%% PDF Settings
+\usepackage[unicode=true]{hyperref}
+\hypersetup{ % https://de.wikibooks.org/wiki/LaTeX-W%C3%B6rterbuch:_hyperref
+	$if(title)$pdftitle={$title$}, % Document-Titel
+	$endif$$if(author)$pdfauthor={$for(author)$$author$$sep$ \and $endfor$}, % Document-Author
+	$endif$$if(keywords)$pdfkeywords={$for(keywords)$$keywords$$sep$, $endfor$}, % Keywords
+	$endif$pdfsubject={$papertype$},
+	pdfcreator={pandoc, LuaLaTeX with KOMA-Script},
+	pdfpagemode=UseOutlines,    % Beim Oeffnen Inhaltsverzeichnis anzeigen
+	pdfdisplaydoctitle=true,    % Dokumenttitel statt Dateiname anzeigen.
+	$if(lang)$pdflang={$lang$}, % Document-Language
+	$endif$$if(colorlinks)$ % Aktivieren von farbigen Links im Dokument
+      colorlinks=true,
+      linkcolor=$if(linkcolor)$$linkcolor$$else$Maroon$endif$,
+      citecolor=$if(citecolor)$$citecolor$$else$Blue$endif$,
+      urlcolor=$if(urlcolor)$$urlcolor$$else$Blue$endif$,
+			filecolor=$if(filecolor)$$urlcolor$$else$Blue$endif$,
+			menucolor=$if(menucolor)$$urlcolor$$else$Blue$endif$,
+	$endif$pdfborder={0 0 0}, % Setzt den Rahmen um einen Link. {0 0 0}erzeugt keinen Rahmen
+	linktocpage=true, 		% Nicht der Text sondern die Seitenzahlen in Verzeichnissen klickbar %???
+	bookmarksnumbered=true, 	% Überschriftsnummerierung im PDF Inhalt anzeigen.								%???
+	breaklinks=true % break links if they are to long for one page
+}
+% don't use monospace font for urls
+\urlstyle{same}
+% enable strikeout
+$if(strikeout)$
+  \usepackage[normalem]{ulem}
+  % avoid problems with \sout in headers with hyperref:
+  \pdfstringdefDisableCommands{\renewcommand{\sout}{}}
+$endif$
+
+% Workaround um Fehler in Hyperref, muss hier stehen bleiben
+\usepackage{bookmark} %nur ein latex-Durchlauf für die Aktualisierung von Verzeichnissen nötig
+\usepackage{cleveref}
+% Schriftart in Captions etwas kleiner
+\addtokomafont{caption}{\small}
+
+% Hurenkinder und Schusterjungen verhindern
+% http://projekte.dante.de/DanteFAQ/Silbentrennung
+\clubpenalty = 10000 % schließt Schusterjungen aus (Seitenumbruch nach der ersten Zeile eines neuen Absatzes)
+\widowpenalty = 10000 % schließt Hurenkinder aus (die letzte Zeile eines Absatzes steht auf einer neuen Seite)
+\displaywidowpenalty=10000
+
+% Set Figure Display
+\floatplacement{figure}{!ht}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Set Pandoc Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+$if(title)$
+	\title{$title$}
+$endif$
+$if(subtitle)$
+	\providecommand{\subtitle}[1]{}
+	\subtitle{$subtitle$}
+$endif$
+$if(author)$
+  \author{$for(author)$$author$$sep$ \and $endfor$}
+$endif$
+$if(institute)$
+  \providecommand{\institute}[1]{}
+  \institute{$for(institute)$$institute$$sep$ \and $endfor$}
+$endif$
+\date{$date$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Begin of Document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+	% Deckblatt
+	$if(title)$
+	$if(author)$
+	$if(finalversion)$
+	\begin{spacing}{1}
+		\begin{titlepage}
+			\begin{tikzpicture}
+				\node[inner sep=0pt](firma)at (0,0) {\includegraphics[height=2.5cm]{images/firma-deckblatt.jpg}};
+						\node[inner sep=0pt](dhbw)at (8,0) {\includegraphics[height=3cm]{images/dhbw.jpg}};
+			\end{tikzpicture}
+			\begin{center}
+				\vspace*{12mm}	{\Large \textbf{$title$} }\\
+				\vspace*{24mm}	{\large\bfseries{\uppercase{$papertype$}}}\\
+				%\vspace*{12mm}	\langdeckblattabschlusshinleitung for the\\
+				%\vspace*{3mm}		{\textbf{\abschluss}}\\
+				\vspace*{12mm}	%\langartikelstudiengang{} \langstudiengang{}
+				{from the Course of Studies}
+				$courseofstudy$\\
+				\vspace*{3mm}		%\langanderdh{}
+				{at the Cooperative State University Baden-Württemberg} \dhbw\\
+				\vspace*{12mm}
+				%\langvon\\
+				by\\
+				\vspace*{3mm}	{\large\textbf{$for(author)$$author$$sep$ \and $endfor$}}\\
+				\vspace*{12mm}	$handindate$\\
+			\end{center}
+			\vfill
+			\begin{spacing}{1.2}
+				\begin{tabbing}
+					mmmmmmmmmmmmmmmmmmmmmmmmmm             \= \kill
+					\textbf{
+					%\langdbbearbeitungszeit
+					Time of Project}       \>  $timeproject$\\
+					\textbf{
+					%\langdbmatriknr, \langdbkurs
+					Student ID, Course
+					}  \>  $studentID$, $course$\\
+					\textbf{
+					%\langdbfirma
+					Company
+					}                  \>  $company$, $companylocation$\\
+					\textbf{
+					%\langdbbetreuer
+					Supervisor in the Company
+					}               \>  $supervisor$\\
+					\textbf{
+					%\langdbgutachter
+					Reviewer
+					}              \>  $reviewer$
+				\end{tabbing}
+			\end{spacing}
+		\end{titlepage}
+	\end{spacing}
+	\newpage
+	$endif$
+	$endif$
+	$endif$
+
+	\pagenumbering{Roman}
+
+	%\pagestyle{plain}		% nur Seitenzahlen im Fuß
+
+	$if(finalversion)$
+	$if(sperrvermerk)$ % Sperrvermerk
+	{
+		\thispagestyle{empty}
+		% Sperrvermerk direkt hinter Titelseite
+		%\section*{\langsperrvermerk}
+		\section{Sperrvermerk}
+
+
+		\vspace*{2em}
+
+		\begin{de}
+		Die vorliegende {$papertype$} mit dem Titel {\itshape{} $title${}\/} enthält unternehmensinterne bzw. vertrauliche Informationen der {$company$}, ist deshalb mit einem Sperrvermerk versehen und wird ausschließlich zu Prüfungszwecken am Studiengang {$courseofstudy$} der Dualen Hochschule Baden-Württemberg {\dhbw} vorgelegt. Sie ist ausschließlich zur Einsicht durch den zugeteilten Gutachter, die Leitung des Studiengangs und ggf. den Prüfungsausschuss des Studiengangs bestimmt.  Es ist untersagt,
+		\begin{itemize}
+		\item den Inhalt dieser Arbeit (einschließlich Daten, Abbildungen, Tabellen, Zeichnungen usw.) als Ganzes oder auszugsweise weiterzugeben,
+		\item Kopien oder Abschriften dieser Arbeit (einschließlich Daten, Abbildungen, Tabellen, Zeichnungen usw.) als Ganzes oder in Auszügen anzufertigen,
+		\item diese Arbeit zu veröffentlichen bzw. digital, elektronisch oder virtuell zur Verfügung zu stellen.
+		\end{itemize}
+		Jede anderweitige Einsichtnahme und Veröffentlichung – auch von Teilen der Arbeit – bedarf der vorherigen Zustimmung durch den Verfasser und {$company$}.
+		\end{de}
+
+		\begin{en}%
+		The {$papertype$} on hand
+		\begin{center}{\itshape{} $title$\/}\end{center}
+		 contains internal resp.\ confidential data of $company$. It is intended solely for inspection by the assigned examiner, the head of the {$courseofstudy$} department and, if necessary, the Audit Committee \langanderdh{} {\dhbw}. It is strictly forbidden
+			\begin{itemize}
+			\item to distribute the content of this paper (including data, figures, tables, charts etc.) as a whole or in extracts,
+			\item to make copies or transcripts of this paper or of parts of it,
+			\item to display this paper or make it available in digital, electronic or virtual form.
+			\end{itemize}
+		Exceptional cases may be considered through permission granted in written form by the author and {$company$}.
+		\end{en}
+
+		\vspace{3em}
+
+		$companylocation$, $handindate$\\
+
+		\vspace{4em}
+
+		\rule{6cm}{0.4pt}\\
+		$for(author)$$author$$sep$ \and $endfor$
+	  \newpage
+	} $endif$ $endif$
+
+	$if(finalversion)$
+	$if(declaration)$ % Erklärung
+		\thispagestyle{empty}
+
+		\chapter*{
+			\texten{Declaration}
+			%\textde{Erklärung}
+		}
+
+		\vspace*{2em}
+
+		\begin{en}
+		Hereby I solemnly declare that my \MakeLowercase{$papertype$}, titled \textit{$title$} is independently authored and no sources other than those specified have been used.\vspace{0.5em}\\
+		I also declare that the submitted electronic version matches the printed version.
+		\end{en}
+
+		\vspace{3em}
+		$handinlocation$, $handindate$
+		\vspace{4em}
+
+		\rule{6cm}{0.4pt}\\
+		$for(author)$$author$$sep$ \and $endfor$
+	  \newpage
+$endif$
+$endif$
+
+	$if(abstract)$ % Abstract
+	{
+		\addchap*{Abstract}
+		\pagestyle{empty}
+		%\begin{abstract}
+		$abstract$
+		%\end{abstract}
+	  \newpage
+	} $endif$
+
+	%\pagestyle{plain}		% nur Seitenzahlen im Fuß
+	\RedeclareSectionCommand[beforeskip=\kapitelabstand]{chapter} % stellt Abstand vor Kapitelüberschriften ein
+
+	% Inhaltsverzeichnis
+	$if(finalversion)$
+	\begin{spacing}{1.1}
+		\begingroup
+
+			% auskommentieren für Seitenzahlen unter Inhaltsverzeichnis
+			\renewcommand*{\chapterpagestyle}{empty}
+			%\pagestyle{empty}
+
+
+			%für die Anzeige von Unterkapiteln im Inhaltsverzeichnis
+			\setcounter{tocdepth}{2}
+
+			\tableofcontents
+			\clearpage
+		\endgroup
+	\end{spacing}
+	\newpage
+
+
+	% Abbildungsverzeichnis
+	$if(graphics)$
+		\cleardoublepage
+		\listoffigures
+	$endif$
+
+	%Tabellenverzeichnis
+	$if(tables)$
+		\cleardoublepage
+		\listoftables
+	$endif$
+
+	% Quellcodeverzeichnis
+	$if(listings)$
+		\cleardoublepage
+		\lstlistoflistings
+	$endif$
+	$endif$
+
+	\cleardoublepage
+
+	% Kolumnentitel im Kopf, Seitenzahlen im Fuß
+	\pagenumbering{arabic}
+	\pagestyle{headings}
+	\ihead{\includegraphics[height=12pt]{ibm_header}}
+	\ohead{\includegraphics[height=12pt]{dhbw_header}}
+	\chead{\sectionmark \: \rightmark}
+	\cfoot*{\thepage}
+
+	$body$ %Content
+
+
+	%$if(biblatex)$ % Literaturverzeichnis
+		\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+	%$endif$
+\end{document}
