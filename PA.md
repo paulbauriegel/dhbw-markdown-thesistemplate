@@ -2,7 +2,7 @@
 title: Development of an interactive dashboard for performance reports on IBM Z systems with Linux
 subtitle: Term Paper T3000
 #abstract: |
-#  Comming sooner or later.
+#  data is a valuable resource especially for performance tests
 author:
   - Paul Bauriegel
 supervisor:
@@ -13,7 +13,6 @@ companylocation: Böblingen
 studentID: 2010923
 course: TINF15AI-BC
 timeproject: 7 weeks
-#Mai 8th 2017 - August 25th 2017
 handindate: February 19th, 2018
 handinlocation: Mannheim
 papertype: Project Report
@@ -26,7 +25,6 @@ titlepage-color: 25467A
 titlepage-text-color: FFFFFF
 titlepage-rule-color: FFFFFF
 titlepage-rule-height: 1
-#biblatex: true
 bibliography: source.bib
 biblio-title: Literature
 csl: iso690-numeric-en.csl
@@ -34,12 +32,11 @@ reference-section-title: Literature
 top-level-division: chapter
 lang: en-US
 codeBlockCaptions: true
-#biblatexoptions:
-#  - backend=biber
-#  - bibwarn=true
-#  - bibencoding=utf8
 listings: true
 ---
+
+<!-- Abbreviations -->
+*[HTML]: Hyper Text Markup Language
 
 <!-- #  TODO -->
 <!-- Abstract -->
@@ -66,14 +63,24 @@ listings: true
 <!-- IBM Z or IBM z-->
 <!-- source visual data mining-->
 
+
+
+<!--Chapter: Implementation of the backend engine-->
+
+<!-- explain Flask and d3 exspecially -->
+
+<!--  https://www.cabotsolutions.com/2017/11/a-detailed-study-of-wsgi-web-server-gateway-interface-of-python -->
+
 # Introduction
 
-Data is a valuable resource [@Hottelet.2017], especially when analyzing or comparing the performance of different technologies.  With test data, it is possible to find bottlenecks in applications or errors in the process flow. However, most large data set are useless until they have been evaluated or visualized to gain insights. Visualization makes it easier for the analyst to understand the relations and evolutions inside the data. As a result, they allow him to work more efficient. Nevertheless, visualization takes valuable time, especially when it has to be done over and over again. There are several software solutions on the market [Meek.2017] to automate these visualizations and get fast insights, like *Tableau* or *Voyager 2* [@Wongsuphasawat.2016]. Still, there are also circumstances which require highly customized reports, as it is necessary for the *IBM z Linux Performance* department.
-The *IBM z Linux Performance* department has several test procedures to evaluate the IBM Z Mainframes on Linux for several workloads. These test runs result in different kinds of reports. Until now these reports are analyzed manually. The goal of this project is to support performance analysists by creating an interactive dashboard for their requirements. The dashboard aims to automate the process of visualization without losing the flexibility in the data presentation. 
+Data is a valuable resource [@Hottelet.2017], especially when analyzing or comparing the performance of different technologies. With test data, it is possible to find bottlenecks in applications or errors in the process flow. However, most large data set are useless until they have been evaluated or visualized to gain insights. Visualization makes it easier for the analyst to understand the relations and evolutions inside the data. As a result, they allow him to work more efficient. Nevertheless, visualization takes valuable time, especially when it has to be done over and over again. There are several software solutions on the market [Meek.2017] to automate these visualizations and get fast insights, like *Tableau* or *Voyager 2* [@Wongsuphasawat.2016]. Still, there are also circumstances which require highly customized reports, as it is necessary for this IBM team.
+The *IBM z Linux Performance* department has several test procedures to evaluate the IBM z Mainframes on Linux for  several workloads. These test runs result in different kinds of reports. Until now these reports are analyzed manually. The goal of this project is to support performance analysists by creating an interactive dashboard for their requirements. The dashboard aims to automate the process of visualization without losing the flexibility in the data presentation. 
 
 This paper presents a working dashboard with specialized performance visualizations. It discusses the design choices for technology and architecture in this application and the ideas behind the different visualizations. The report highlights the advantages of this tool as well as further challenges.
 
 <!-- tell what will not be presented in this paper -->
+
+<!-- Fragestellung diskutieren , kann dass und sas erreicht werden?-->
 
 Therefore the reader will be introduced to the design aspects of data visualization and the requirements for an interactive performance visualization dashboard. The first chapter explains how effective data visualization has to be implemented. The second provides a case study for the application, which includes detailed information about the data source.
 On this foundation, the architecture and the technologies of this application are evaluated. This part compares the different technology options and underlines the design decisions.
@@ -106,7 +113,7 @@ Information - Information is processed data that has been given a context. The c
 Knowledge - Knowledge is an application of data and information to understand the processes and developments that created the data. Knowledge can be the results of a machine learning process or analysis by subject matter experts.
 Understanding - Understanding extends the knowledge by providing explanations for the developments in the data.
 
-![Process of visualization](../Box Sync/DHBW Mannheim/PA5/images/krypczyk_diagrammarten_1.jpg "Process of visualization"){#fig:vis-proccess caption="Process of visualization" width=70%}
+![Process of visualization](images/krypczyk_diagrammarten_1.jpg "Process of visualization"){#fig:viz-process caption="Process of visualization" width=70%}
 
 The process of visualization has been defined in a reference model by Card, Mackinlay, and Shneiderman [@Shneiderman.1999, @Chi.Jan.2000, @Krypczyk.2014]. The model has three transformation phases, to transform the data between the different levels of knowledge. The process begins with the raw data being transformed into structured tables. Data in tabular form is easier to visualize. The *data* becomes *information*.
 The visual mapping converts the data tables into visual structures. These have graphical properties instead of the mathematical relation inside the tables. The mapping into structures results in possible *knowledge* for the viewer. Such a mapping depends on the chosen chart type and if the data is discrete or continuous. 
@@ -136,9 +143,7 @@ In an interactive dashboard, the user can adjust his view of the data, but not t
 How intuitively the user can work with the data depends mainly on the type of chart. Mackinlay and Tufte use their publication to explain their selection of visualization type based on sets of examples. This paper will not summarize their main works. Instead, it will use simple classifications guidelines for the choice of visualization. To decide if either a chart or another representation is used, the Visual Thinking Codex by Dan Roam will be applied. This paper expects that all data will be represented as a chart. Because of that a chart selection diagram by Andrew Abela should help to use the best chart visualization [@Abela.2006].
 
 The Visual Thinking Codex is a tool for visual thinking by Dan Roam [@Roam.2008]. Visual thinking is a methodology to organize the thoughts by visualizing them. The codex is using another tool called SQVID. The idea behind SQVID is that the user can think of a thing in a variety of different ways. **S**imple or Elaborate, **Q**ualitative vs. Quantitative, **V**ision and Execution, **I**ndividual against Comparison, **D**ifference/change or As is. [@Roam.2008b]
-The codex suggests different types of visualization. The codex suggests a visualization based on two questions.  
-1. What wants the user to know or How id he asking his question? 
-2. What weighting he has in mind based on the SQVID methodology.
+The codex suggests different types of visualization. The codex suggests a visualization based on two questions. What wants the user to know or How did he asking his question? And Secondly, what weighting he has in mind based on the SQVID methodology.
 Any z performance analyst asks primarily two kinds of question *How*  is sth. and *Why* is it like this. For example *How* much memory is used?, or *Why* are we losing performance?. These questions come from different view angles so that no filtering based on the kind thinking can be made.  However, on the kind of questions, it can be seen that plots and charts are the primary visualization type. Therefore a further chart study can provide some advice for choosing the right chart. [@Roam.2008]
 
 As part of the Extreme Presentation ^TM^ Method, Abela did provide a Chart Suggestion graphic which can help to choose the right presentation method. The main question is what should be shown. A comparison can be shown in bar or column charts.  Distribution may be better with histograms. A relationship requires a bubble or scatter chart, and a composition can be shown with stacked or pie charts. This source is just meant to be a simple overview and is not in any meaning complete.  [@Abela.2006]
@@ -200,7 +205,7 @@ When the UX Analysis is completed, the actual UX Design starts. The design inclu
 Finally, the UI implementation will be done and delivered to test and validate the design. Therefore metrics and analytics tools are used to track how the users use our product and how satisfied there are.
 To achieve good user experience many companies use a specific methodology. Very popular are Design Thinking [@Dam.2018] or the Double Diamond [@Schneider.2015] process. IBM is using a modified version of Design Think called IBM Design Thinking [@IBM.2017].
 
-## Use case study of the data source {#sec:usecase-dat}
+## Use case study of the data source {#sec:usecase-data}
 
 All reports are stored in one server directory which the visualization dashboard has access to. The data storage contains reports of different kinds. These reports contain monitored performance data for IBM Z systems on Linux.  This section provides a short overview about the raw data formats, that can be visualized by the application stack. There are four different formats: System Activity Report reports for Linux, profiling binary data and graphviz files in general, textual log files in a specific format and internal reports for processing units.
 
@@ -283,7 +288,7 @@ Further work on the server side, like mapping or rendering the data [@Chen.2017]
 The more generic reference model for data visualization by Ben Shneiderman helps to distinguish the tasks between server and client further. The server will handle all data, while the client will present the visual forms. The data transmission between the two components should be implemented in a standardized way, which allow parameters for the different views and files. The model distinct also the routing task between client and server. The server makes the rooting between the different files/data sources. He will route the client to the reporting component for this file. The client, on the other hand, will handle the routing between the different views of the selected dataset.
 
 
-## Backend technology requirements
+## Backend technology requirements{#sec:backend-tech}
 
 According to the architecture, the backend has three main tasks: reading data in different formats, analysis and pre-processing the data and the provide the data in a standardized way. Additionally, the backend needs to deliver the web pages to the clients.
 
@@ -474,11 +479,11 @@ This chapter will present an implementation overview based on the architecture a
 
 <!-- rewrite architecture for logic flow, execution flow, etc. like Kruse software engineering and arc42 -->
 
-The application is designed with a two-tier client-server architecture [p. 43ff, @FitzGerald.2012]. The advantage of this implementation that the two layers are strictly separated and can be developed independently. The layers are solely communicating over the REST interface. The following graphic presents the components of the architecture. The Web Layer contains the complete frontend logic separately provisioned into the different report modules shown as 📄 elements. The Python backend handles all web request from clients which are requesting the report modules. In also handles the REST requests from the report modules working at the client. In the following chapters explain the internal structure of the layers as well as their logic and execution flow.
+The application is designed with a two-tier client-server architecture [p. 43ff, @FitzGerald.2012]. The advantage of this implementation that the two layers are strictly separated and can be developed independently. The layers are solely communicating over the REST interface. The following graphic presents the components of the architecture. The Web Layer contains the complete frontend logic separately provisioned into the different report modules shown as :page_facing_up: elements. The Python backend handles all web request from clients which are requesting the report modules. In also handles the REST requests from the report modules working at the client. In the following chapters explain the internal structure of the layers as well as their logic and execution flow.
 
 
 
-![Dashboard Architecture Overview](images\Architecture.png "Dashboard Architecture Overview")
+![Dashboard Architecture Overview](images\Architecture.png "Dashboard Architecture Overview"){#fig:arch-overview caption="Dashboard Architecture Overview" width=50%}
 
 ### Application Frontend - Web Layer
 
@@ -498,60 +503,405 @@ The minimized stack is handling the REST request with the ```XMLHttpRequest```. 
 As discussed in chapter [@sec:backend-tech] the backend is written in Python 3.6. The project has several dependencies. 
 Flask is handling all web requests, the REST interface as well as the backend rendering and the provision of the web pages. For each report module, the web provisioning has to be extended with the new routing rules and the data-processing functions. Each report view also needs one or more REST requests. Each REST Call is bind to the processing functions. 
 Since each report has different file types and requirements, a common layer is not possible. The only common layer is the data access, which contains only a few functions.
-The data preparation has many different tasks. Some performance reports like the sysstat or the CPI data do contain multiple datasets. The "header functions" are iterating over these files to find the line range of the datasets. The client can request these datasets separately. Since the backend is RESTful, each request will execute an independent data preparation function. If the data-set is tabular, the pandas library will handle the call. Otherwise custom log analyzer functions are processing the request. The pandas library will only load the requested file-part into memory to transform or filter the dataset for the client's demands. The log functions are working similarly.
-The handling of profiling data is an exception to the described RESTful workflow. Profiling data, e.g., perf data files, is most cases binary data and cannot be analyzed directly. At first, the data has to be processed by the profiling tool itself. Like in this example for perf:  ```perf script | c++filt | gprof2dot.py -f perf > perf.data.dot```.
+The data preparation has many different tasks. Some performance reports like the sysstat or the CPI data do contain multiple datasets. The "header functions" are iterating over these files to find the line range of the datasets. The client can request these datasets separately. Since the backend is RESTful, each request will execute an independent data preparation function. If the data-set is tabular, the *pandas* library will handle the call. Otherwise custom log analyzer functions are processing the request. The *pandas* library will only load the requested file-part into memory to transform or filter the dataset for the client's demands. The log functions are working similarly.
+The handling of profiling data is an exception to the described RESTful workflow. Profiling data, e.g., perf data files, is most cases binary data and cannot be analyzed directly. At first, the data has to be processed by the profiling tool itself. Like in this example for perf:  
+
+```sh
+perf script | c++filt | gprof2dot.py -f perf > perf.data.dot
+```
+
 Therefore the backend will execute a bash sub-process. After the serialization by the profiling tool, the output is directly piped into gprof2dot. Gprof2Dot is written José Fonseca and creates a graphviz file with the corresponding call graph. This dot file is then delivered to the client.
 
-<!-- to long explanation at wrong place -->
-
 ## Dashboard Implementation
-The second part will present the key implementation in the back and frontend. The implementation samples for the frontend will cover the REST API and the data pre-processing. The samples for the frontend will cover the graph plotting with D3, the visualization of graphviz files and the page routing with React. 
-<!-- double text passage -->
+The second part will present the key implementations for the back and the frontend. The implementation samples for the frontend will cover the REST API as implemented with Flask and the data pre-processing. The samples for the frontend will cover the graph plotting with D3 and the page routing with React. Furthermore, the chapter explains the components interactions and dependencies.
 
 ### Implementation of the backend engine
 
-<!-- explain Flask and d3 exspecially -->
+<!-- How das Flask work cite article -->
 
-<!--  https://www.cabotsolutions.com/2017/11/a-detailed-study-of-wsgi-web-server-gateway-interface-of-python -->
+From the architecture point of view, the backend has three components written in Python. Some of these components have subcomponents, separated by the different functionality the component provides. 
+In the implementation view, the backend engine consists of one Python project with its ```__init__.py```. This file initiates the Flask web framework and then loads all other files from the other components. Listing **XY** shows a simplified extract of this file. 
+```{caption="Start script for backend project" .python} 
+app = Flask(__name__)
+app.config.from_object('application.conf')
+...
 
-#### Data preprocessing in Python 3
+import webstefan.login
+import webstefan.browse
+import webstefan.sardata_rest
+....
 
-#### REST implementation with Flask
+context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+context.load_cert_chain('server.crt', keyfile='server.key')
+
+app.run(host='0.0.0.0', port=5000, ssl_context=context)
+```
+In contrast to what the architecture view lets expecting, the imported files are separated by the view. This means it exists a view for the login, the file browsing for each report and so on. The implementation is not a violation of the architectural proposal. It just means that REST Interface and data processing are stacked together because of the Flask requirements. As shown in Listing **XY** every request that has to be handled by Flask requires a Python function with a ```app.route(...)``` annotation. So instead of referencing from this function to another function from another file, the implementation of the data processing is implemented directly into it. Some common helper functions like the data manipulation or the file access are also outsourced into separate files. Since the files are on the actual server, there is no complicated data access. The component just provides the absolute path to the data source,  based on the machine the application is running on. 
+```{caption="Data Preprocessing with pandas and Python 3" .python}
+@app.route('/sarcsv/cpu_usage/core_mean/<path:file_path>/<int:start>-<int:diff>', methods=['GET'])
+def cpu_usage_core_mean(file_path, start, diff):
+    file_path = os.path.abspath(os.path.join(BASE_DIR, file_path))
+    c = check_file(file_path)
+    if c != 200:
+        return abort(c)
+    df = read_df(file_path, start, diff)
+    df = df.filter(items=[x for x in list(df) 
+                          if x.startswith('%') or x == 'CPU'])
+    df = df.groupby(['CPU']).mean()
+    df = df.transform(lambda col: col/col.sum() * 100)
+    df.fillna(value=0, inplace=True)                        
+    return df.to_json()
+```
+In the following, all necessary modules used during this work will be explained briefly.
+***login*** - The login component is what the user will see first when he wants to access the application. It provides a simple mask for the credentials, secured by TLS. These credentials will be checked against the LDAP server inside the IBM Intranet. Every request function annotated with ```@login_required``` will check if the login is valid. The Flask-Login module provides this functionality.
+***datamodel*** - If the user does login successfully he will be registered automatically in the data model. The model uses the Flask-SQLAlchemy to store its data inside an SQLite database.
+***browse*** - If the users are logged in, they will automatically redirect to this view, the file browsing view. This component renders the view of a server directory and provides the routing to all reports. The server-side routing uses the jinja2 HTML  template and the rendering function itself: ```render_template('browser.html', message=message)```.
+The primary function for the browsing view uses the file extension or regular expressions to redirect to the report module.
+***\*\_rest*** - Each report module as an equivalent backend component providing the HTML&JS as well as handling all the REST requests. Which methods the \_rest component is providing depends on the data file. If the data file has multiple data sets, like sysstat data, it exists a ```parse_header``` function. This function detects all data sets, together with their starting and ending line in the file.
+Each dataset has one or more functions depending on the data the charts are requiring. The backend contains functions that read and filter csv data, parse log files or just returning the file lines for a given range.
 
 ### Implementation of visualization and user interface
 
-#### Page routing with React v16
+<!-- How das D3.js work cite bostock article -->
+<!-- boilerpaletts of report modules-->
+In contrast to the backend, the report modules are independent of each other. Each report module uses either one of the two JS Application stacks. This chapter will provide a short overview how both stacks are working. Besides, the graph visualization with D3.js will be explained.
 
-#### Visualisation of Graphviz files
+The minimized JS application base uses MaterializeCSS and jQuery. The Materialize components are used for the navigation bar and several Form components. 
+<!-- -> How do you implement MaterializeCSS components -> listing-->
+The form components are modifying the internal data model. The internal data model defines which data lines are represented in the charts. It also contains the configuration for each chart. The listing XY shows how the jQuery triggers for Materialize change the data model. Each input element has a unique id. jQuery will listen on the change of this element and will trigger a redraw of the plot: ```$('#log-axis').change(()=>redrawPlot());```. This is what React would to automatically. Materialize has also some limitations, which result in a more complex implementation. One of then is the Chip-Input. Materialize does not allow it to add or delete elements to the current state of an input field. Each change needs a complete rebuild of the inputs field model. Therefore the code is handling the transition from the input for inactive data lines to active data lines in an asynchronous way as shown in listing XY. 
+If these state changes are getting more complicated, the asynchronous code is getting confusing because of many referencing callbacks.
 
-#### Data plotting with D3.js v4
+```{#lst:react-routing caption="React page routing, HeaderPage View" .react}
+import React from 'react';
+import 'url-search-params-polyfill';
+...
+
+class PUTable extends React.Component  {
+	...
+    render() {
+        const query = new URLSearchParams(window.location.search), 				 file = query.get('file');
+        let rows = [], _data = this.state.data;
+        this.state.rows.forEach(function(item) {
+            rows.push(
+                <Link to={`/pureport/details?file=${file}&startReport=${_data[item][0]}&endReport=${_data[item][2]}`}>
+                    <ListItem primaryText={item} 
+                        	  rightIcon={<KeyboardArrowRight/>}>
+                    </ListItem>
+                </Link>);
+        });
+		...
+        return (<div><List>{rows}</List></div>);
+    };
+}
+
+export default PUTable;
+```
+Using React radically simplifies complex state changes and simplifies the routing between the pages. Listing XY shows how the routing is implemented with React components. Because of Reacts API, the code basis for this applications is much smaller. Every View in React is a separate ```React.Component```. The component inherits multiple methods which handle the lifecycle of the component. As the code snipped shows, the app uses three functions from the component API. The ```constructor()``` function is a basic class constructor allows passing arguments or states between the components. If the state of the component gathers the data dynamically at its creation, the ```componentWillMount()``` function implements this code part. These parts are for example the REST calls with ```axios```. The components lifecycle will hook the ```render()``` function afterward. At this point, the data might not be loaded already. So the render function needs to handle the empty state properly[@lst:???]. The main feature of the render function is its rerendering on a state change. So every time new data is loaded or the data is filtered the render function will display the update automatically. The automatic rerendering is the main advantage of React, besides the routing between components. The routing is implemented by the JSX element ```BrowserRouter``` and the Link element references to the next View Component URL. The Material-UI provides the other JSX elements for the website layout. Therefore the ```MuiThemeProvider``` needs to be implemented on the top level and then other JSX elements like the ```AppBar``` or a Table can be used.
+
+On top of both application layers, the JS Code for the visualization is running. The reports use three different ways to represent the data. Simple Tables by using the JSX Table element from Material-UI. The viz.js rendering library for the graphviz files and the D3.js for the complex samples. The listing XY shows the basic syntax for representing the JSON Data in tables on React. It is a simple iteration over the dataset to push all rows into the table. 
+
+The graphviz implementation contains a rendering of graphviz files and parsing of graphviz call graphs. The rendering part is a combination of a simple  ```XMLHttpRequest``` and the viz.js rendering call. The parsing component is splitting the content of the graphviz file into different strings. The important strings, the C++ function signatures, are then parsed and shorten to a specific nesting level.
+
+```{caption="function to draw simple line chart with d3.js" .javascript}
+// Scale the range of the data  
+let y = d3.scaleLog().range([height, 0]).base(2)
+	.domain([(min > 0) ? min : 1e-6, max]):
+let x = d3.scaleLinear().range([0, width]).domain([xmin, xmax]);
+let z = d3.scaleOrdinal(d3.schemeCategory10).domain(lineData.map(c=>c.id))
+
+// Add the valueline path.
+let valueLine = d3.line().x((d) => x(d.value)).y((d) => y(d.timestamp));
+
+// Add the both axis
+svg.append("g").call(d3.axisLeft(y));
+svg.append("g").attr("transform",`translate(0,${height})`).call(d3.axisBottom(x));
+
+// Draw the lines with data values
+let line = plot.selectAll(".data-line").data(data).enter().append("g");
+line.append("path").attr("d", d => valueLine(d.vals))
+	.style("fill", "none").style("stroke", d => z(d.id));
+```
+
+Most of the performance data is visualized in different kinds of charts, like bar, line or pie charts. The main feature of these charts is that many options can be configured in the web interface. The low-level visualization library D3.js can achieve that level of customizability even for unusual requirements. D3 provides a considerable stack of functionality but does require to set up each element of the chart manually. How this works is explained on a short example. D3 can read data from different formats, such as text, CSV or JSON. After data loading, the d3-fetch API does execute the callback for the actual drawing function. The callback function does then transform the data into the required representation. From there on a new or existing drawing element (Canvas or SVG) is selected to plot the chart. Each step of drawing is shown in the listing above. The data needs to be scaled based on the canvas dimensions. After that, a line function (valueLine) is created to arrange the data on the chart. The actual drawing is then implemented by selecting a new graph element to add an axis or the data. For other types of charts, the workflow is different regarding the necessary API calls. To enhance the visualizing capabilities of the application more datasets or views can be implemented by using the examples from bl.ocks.
 
 
-# Conclusions and future work
+# Conclusions and Future work
 
-::: What have been the requirements ::::::
-Time
-::: Architeture conclusion ::::::
-Client Server Application
+The interactive dashboard developed by this work is helping performance analysists to visualize different kinds of performance reports. This paper presents a prototype that can analyze and plot different types of report files. These report types cover four different types of data: sysstat-sar reports in tabular format, special tagged and formatted log files, summary reports on processing units and binary files from profiling tools. The IBM z Systems testing environment contains much more datasets to be analyzed. With the different boilerplates developed due this work for visualization and interface a comfortable extension of the dashboard is also possible.
 
-::: Technology conclusion ::::::
-Best web framework = Flask is used because it is already used -> consider switching the web framework in python to wheezy or falcon 
-speak about Python vs. Go...???
-Best UI-Framework -> react, vue may be a competitor
-CSS Styling not important
-Best Visualisation Framework -> D3
+Together with the development, this paper did evaluate the possible architecture and the application stack. The solution is built on an existing web application written in Python 3 and Flask. Therefore this backend has been evaluated against other competing web frameworks. The evaluation has shown that Flask is not the fastest framework existing, but with the given use case it is a reasoned choice. Python as backend language stands out with its simplicity for prototyping and its excelled libraries. If the application needs to scale better regarding web requests a change to a more efficient Python web framework, like *falcon* or *wheezy.web*, is possible. The current implementation tries to achieve the best scalability by following the REST principles.
+Each client renders the report module by his own. The components are written in JavaScript and performing REST request for the visualization they want to view. Depending on its complexity of the report has two different boilerplates for the web UI: a minimized version using MaterializeCSS and jQuery and a more sophisticated one with React. React has been chosen over Angular and Vue.js because of simplicity and flexibility, together with a huge environment.
+The actual visualization in the modules is done by D3.js drawing the charts and viz.js rendering the graphviz files. The performance, the enormous possibilities of the API and the huge amount of sample implementations for all kinds of graphs are the motivation to use D3.js as primary charting library. The disadvantage of D3 is its complex implementation. If performance and customizability can be sacrificed for a simpler plotting, Vega is an excellent choice as descriptive visualization language.
 
-::: Implementation conclusion ::::::
-- four reports, with difernet coverage and aspects -> further work have to be done -> more reports, more plots -> ...
+Extending the current prototype, by extending the existing views or by introducing new modules will further help the IBM performance analysists. The application can also add a plugin structure for the new reports modules to simplify the integration. Further integration into the IBM environment is possible by using services like the Single-Sign-On. Additional work should also try to visualize the reports on the fly, while the tests are running. Such a feature makes it possible to focus on the pure performance analysis of the IBM z Systems, what was the overall goal of this work.
 
-::: Further Work ::::::
+# Appendix
 
-live stream data, while the report is running
+```{caption="Visualisation of Graphviz files" .react}
+let client = new XMLHttpRequest();
+client.open("GET","/file/" + getUrlParameter('path'),true); // Get file path
+client.send();
+client.onreadystatechange = function() {
+	if (client.responseText.length === 0){
+		$('#graphvizfile').html("Empty Dot file")
+     } else {
+		let responseText = client.responseText;
+		let scrollToEl = () => {$('html').animate({scrollLeft: $('#node1').position().left-100}, 0)};
+		try {
+			updateDotFile(responseText, [], scrollToEl);
+			$('#switch-collapse').change(()=>{updateDotFile(responseText, [], scrollToEl)});
+		} catch(err) {
+			$('#graphvizfile').html("Cloud not parse dot file!")
+		}
+	}
+};
 
-single sign-on IBM
+```
 
-interconnect the reports
+\newpage
 
-plugin structure
+```{caption="React Material Table, SubPage View" .react}
+import React from "react";
+import axios from "axios/index";
+import CircularProgress from 'material-ui/CircularProgress';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow,
+    TableRowColumn } from 'material-ui/Table';
 
-::::::::::::::::::
+class SubPUView extends React.Component {
+    componentWillMount(){
+        const query = new URLSearchParams(window.location.search);
+        axios.get(`/pureport/table/${query.get('file')}/${query.get('startReport')}/${query.get('endReport')}`)
+		.then((data)=>{
+            this.setState({data: data.data});
+        }).catch(error =>{
+            this.setState({error: true, errmsg: error.toString()});
+        });
+    };
+
+    render() {
+        if (!this.state) {
+            return (<CircularProgress />);
+        } else if (...) {...}
+        } else if (this.state.data !== null) {
+            return (
+                <Table>
+                    <TableHeader>...</TableHeader>
+                    <TableBody>
+                        {this.state.data.map( (row, index) => (
+                            <TableRow>
+                                <TableRowColumn>{row.name}</TableRowColumn>
+                                <TableRowColumn>{row.value}</TableRowColumn>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            );
+        }
+    }
+}
+
+export default SubPUView;
+```
+
+\newpage
+
+```{caption="D3 JSON Request and Plot rendering" .javascript} 
+// List all tests of this directory
+d3.json(`/janreport/runs/${file}/list_runs`, function (error, data) {
+    if (error) throw error;
+    let colorMapping = data.reduce((acc, key, i, _) => {...}, {});
+                                                        
+    function redrawPlot(){
+        newChart('/janreport/runs/', file, '/all_runs', ...UI-Selection ..., colorMapping);
+    }
+	newChart('/janreport/runs/', file, '/all_runs', [], colorMapping);
+	
+    /** UI Handling */
+    $(function () {...redrawPlot();...});
+});
+
+// Draw Charts
+function newChart(restUrl, file, arg, selector, colorMapping) {
+    d3.json(restUrl + file + arg,
+        function (error, data) {
+            if (error) throw error;
+			
+            // format the data
+            let chartData = Object.keys(data).map(stage => ({...}));
+            let crtOpt = Object.keys(chartData.reduce((obj, item, i) => {...}, {}))
+				.indexOf(getAxisValue("#phase-filter"));//"TRAIN");
+            Object.keys(chartData[crtOpt].stageData.reduce((obj, item, i) => {...}, {}))
+				.forEach((currentValue, index, _) => {
+					d3.select("#jan-" + currentValue).selectAll('*').remove();
+					let subData = chartData[crtOpt].stageData[index].chartData
+						.filter((elem) =>selector.indexOf(elem.id) !== -1);
+					if (currentValue == "usag") {
+						drawSimpleLineChart(subData, "#jan-" + currentValue, colorMapping,
+							(p, d, v, x, y, z) => drawSimpleLine(p, d, v, x, y, z, 'Prozent'));
+					} else {...}
+            });
+        });
+}
+```
+
+\newpage
+
+```{caption="Backend routing and rendering" .python} 
+@app.route('/browse/<path:dirpath>')
+@login_required
+def browse(dirpath=''):
+    absolute_path = path.abspath(path.join(BAS_DIR, dirpath)) 
+    message = {}
+
+    if not path.exists(absolute_path):
+        message['content'] = 'Your path {} does not exist.'.format(absolute_path)
+    else:
+        if path.isfile(absolute_path):
+            if dirpath.endswith('sarcsv') or dirpath.endswith('sartxt'):
+                file_name = dirpath.split('/')[-1]
+                return redirect("/sarcsv" + "?path=" + dirpath)
+            elif dirpath.endswith('perf.data'):
+                if 'perf.data.dot' in os.listdir(absolute_path.rsplit('/', 1)[0]):
+                    return redirect("/perf/perf.html" + "?path=" + dirpath + '.dot')
+                try:
+                    subprocess.run("cd {} && perf script -f | c++filt | gprof2dot -f perf > perf.data.dot"
+                                   .format(absolute_path.rsplit('/', 1)[0]), shell=True, check=True)
+                    ...
+                    return redirect("/perf/perf.html" + "?path=" + dirpath + '.dot')
+                except subprocess.CalledProcessError as e:
+                    message['content'] = 'An error occurres while creating dot file for perf data.'#e.__traceback__
+            elif dirpath.endswith('dot'):
+			...
+            return send_file(absolute_path)
+```
+
+```python
+        elif path.isdir(absolute_path):
+            file_list = [x for x in os.listdir(absolute_path) if not x.startswith('.')]
+            for file in file_list:
+                if file[:1].isdigit() and file.endswith('.txt'):
+                    if re.match(r"^[1-9][0-9]*_SMT(1|2)_.*\.txt$", file):
+                        with open(os.path.join(absolute_path,file), "r") as f:
+                            for line in f:
+                                if line[0] == '#' and line[0:3] == '###':
+                                    return redirect("/janreport/janreport.html" + "?path=" + dirpath)
+
+            message['files'] = [{'element': x, 'type': get_icon(path.abspath(path.join(absolute_path, x)))}
+                                for x in file_list]
+            message['paths'] = file_list
+            message['path'] = [] if not dirpath else \
+                [{'name': p, 'url': '/browse/' + dirpath.split(p)[0] + p} for p in dirpath.split("/")]
+
+            for index, file in enumerate(file_list):
+                message['paths'][index] = path.join(dirpath, file)
+
+    return render_template('browser.html', message=message)
+```
+
+\newpage
+
+```{caption="Check login credentials with LDAP" .python} 
+def try_login(username, password):
+    LDAP_PROVIDER_URL = 'ldaps://someibmsite.com'
+    basedn = 'ou=someibmsite,o=ibm.com'
+
+    server = Server(LDAP_PROVIDER_URL, port=636, use_ssl=True, get_info=ALL)
+    conn = Connection(server ,user=username, password=password, authentication=SIMPLE,
+						auto_bind=AUTO_BIND_NONE, raise_exceptions=True)
+
+    conn.open()
+    result = conn.search(basedn, '(mail=%s)' % username)
+    conn.user = conn.response[0]['dn']
+
+    if result:
+        try:
+            conn.bind()
+        except LDAPInvalidCredentialsResult as e:
+            raise e
+```
+
+\newpage
+
+```{caption="Analysing the sysstat files for sub datasets" .python} 
+@app.route('/sarcsv/parse_header/<path:file_path>', methods=['GET'])
+def parse_header(file_path):
+    file_path = os.path.abspath(os.path.join(BASE_DIR, file_path))
+    c = check_file(file_path)
+    if c != 200:
+        return abort(c)
+    istxt = file_path.endswith('txt')
+    with open(file_path) as infile:
+        arr = {}
+        key_old = ""
+        line_nbr = 0
+        follow_header = False
+        for line in infile:
+            if ((not istxt) and line[:1] == '#') or follow_header:  
+                header = line.split() if istxt else line.split(";")
+                if istxt:
+                    print(header)
+                    header[0] = "timestamp"
+                key_new = header[1 if istxt else 3].replace("/", "-")
+                if key_new in arr.keys():
+                    key_new += '_' + header[2 if istxt else 4]\
+                        .replace("/", "-").replace("\n", "")
+                arr[key_new] = {'start': line_nbr, 'diff': 0}
+                if line_nbr != (2 if istxt else 0):
+                    arr[key_old]['diff'] = arr[key_new]['start'] - arr[key_old]['start']
+                key_old = key_new
+                follow_header = False
+            elif istxt and line == '\n':
+                follow_header = True
+            elif istxt and line.startswith('-'):
+                break
+            line_nbr += 1
+        arr[key_old]['diff'] = arr[key_new]['start'] - arr[key_old]['start']
+        arr[key_new]['diff'] = line_nbr - arr[key_new]['start']
+    return jsonify(arr)
+```
+
+\newpage
+
+```{caption="HTML Template for browsing the server directory" .html} 
+{% extends "layout.html" %}
+
+{% block styles %}
+    {{super()}}
+{% endblock %}
+{% block head %}
+    {{super()}}
+{% endblock %}
+
+
+{% block body %}
+    <div  class="container">
+        {{super()}}
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a href="/browse"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> /</a>
+                {% for path in message.path  %}
+                <a href="{{ path.url }}">{{ path.name }}/</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                {{ message.content }}
+                {% if message.files %}
+                    <ul style="list-style-type:none">
+                        {% for file in message.files  %}
+                            <li>
+                                <span class="glyphicon glyphicon-{{ file['type']}}" aria-hidden="true"></span>&nbsp;
+                                <a href="/browse/{{ message.paths[loop.index0]}}">{{ file['element'] }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+```
+
